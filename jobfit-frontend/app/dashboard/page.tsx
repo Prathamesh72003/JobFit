@@ -1,187 +1,138 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Bell, Home, Briefcase, FileText, Mail, HelpCircle, Moon, Sun, Search } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import {
-    FileText, Mail, Send,
-    User, Settings, LogOut, Menu, X
-} from 'lucide-react'
-import axios from 'axios'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
+import HomeDashboard from './homedashboard'
+import MySkillsAndProjects from './myskillsandprojects'
+import JobPostingAnalysis from './jobpostinganalysis'
+import ResumeBuilder from './resumebuilder'
+import ColdEmailGenerator from './coldemailgenerator'
+import HelpSupport from './helpsupport'
 
 export default function Dashboard() {
-    const [jobUrl, setJobUrl] = useState('')
-    const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [resumeContent, setResumeContent] = useState('')
-    const [emailContent, setEmailContent] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
+    const [isDarkMode, setIsDarkMode] = useState(true)
+    const [activeSection, setActiveSection] = useState('home')
 
-    const handleJobSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        console.log('Job URL submitted:', jobUrl)
+    const toggleDarkMode = () => setIsDarkMode(!isDarkMode)
 
-        try {
-            const res = await axios.get('http://localhost:8000/get-fit-resume', {
-                params: {
-                    url: jobUrl
-                }
-            })
+    const sidebarItems = [
+        { icon: Home, label: 'Home Dashboard', id: 'home' },
+        { icon: Briefcase, label: 'My Skills & Projects', id: 'skills' },
+        { icon: Search, label: 'Job Posting Analysis', id: 'analysis' },
+        { icon: FileText, label: 'Resume Builder', id: 'resume' },
+        { icon: Mail, label: 'Cold Email Generator', id: 'email' },
+        { icon: HelpCircle, label: 'Help/Support', id: 'help' },
+    ]
 
-            setResumeContent(res.data.resume_section)
-
-        } catch (error) {
-            console.error('Error fetching content:', error)
-            setResumeContent('An error occurred while fetching your resume. Please try again.')
-        } finally {
-            setIsLoading(false)
+    const renderContent = () => {
+        switch (activeSection) {
+            case 'skills':
+                return <MySkillsAndProjects />
+            case 'analysis':
+                return <JobPostingAnalysis />
+            case 'resume':
+                return <ResumeBuilder />
+            case 'email':
+                return <ColdEmailGenerator />
+            case 'help':
+                return <HelpSupport />
+            default:
+                return <HomeDashboard />
         }
-
-        setEmailContent('Dear Hiring Manager,<br><br>I hope this email finds you well. I am writing to express my strong interest in the [Job Title] position at [Company Name].<br><br>Best regards,<br>Your Name')
-    }
-
-    const formatResumeSection = (content: string) => {
-        if (!content) return ''
-
-        const sections = content.split('###').filter(section => section.trim() !== '')
-
-        return sections.map(section => {
-            const [title, ...items] = section.split('\n').filter(item => item.trim() !== '')
-            return `
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold mb-2">${title.trim()}</h3>
-                    <ul class="list-disc list-inside">
-                        ${items.map(item => `<li>${item.replace(/^-\s*/, '')}</li>`).join('')}
-                    </ul>
-                </div>
-            `
-        }).join('')
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0a0a1f] to-[#1a1a3f]">
-            <nav className="fixed top-0 left-0 right-0 bg-white/10 backdrop-blur-md border-b border-white/20 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+        <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+            <div className="flex h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+                <motion.aside
+                    className="w-64 bg-gray-800 bg-opacity-50 backdrop-blur-lg border-r border-gray-700"
+                    initial={{ x: -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="p-4">
+                        <h1 className="text-2xl font-bold text-purple-400">JobFit AI</h1>
+                    </div>
+                    <nav className="mt-8">
+                        {sidebarItems.map((item) => (
+                            <motion.button
+                                key={item.id}
+                                className={`flex items-center w-full px-4 py-2 mt-2 text-sm font-semibold ${activeSection === item.id ? 'bg-purple-600 bg-opacity-50' : 'hover:bg-purple-600 hover:bg-opacity-25'
+                                    } transition-colors duration-200`}
+                                onClick={() => setActiveSection(item.id)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <item.icon className="w-5 h-5 mr-3" />
+                                {item.label}
+                            </motion.button>
+                        ))}
+                    </nav>
+                </motion.aside>
+
+                {/* Main Content */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Header */}
+                    <header className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-50 backdrop-blur-lg border-b border-gray-700">
                         <div className="flex items-center">
-                            <span className="text-white text-xl font-bold">JobFit AI</span>
-                        </div>
-                        <div className="hidden md:block">
-                            <div className="ml-10 flex items-baseline space-x-4">
-                                <Button variant="ghost" className="text-white">Dashboard</Button>
-                                <Button variant="ghost" className="text-white">Profile</Button>
-                                <Button variant="ghost" className="text-white">Settings</Button>
-                            </div>
-                        </div>
-                        <div className="md:hidden">
-                            <Button variant="ghost" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                                {sidebarOpen ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            {/* Mobile sidebar */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden">
-                    <div className="fixed inset-y-0 left-0 w-64 bg-[#0a0a1f] p-5">
-                        <div className="flex flex-col space-y-4">
-                            <Button variant="ghost" className="text-white justify-start">
-                                <User className="mr-2 h-4 w-4" /> Profile
-                            </Button>
-                            <Button variant="ghost" className="text-white justify-start">
-                                <Settings className="mr-2 h-4 w-4" /> Settings
-                            </Button>
-                            <Button variant="ghost" className="text-white justify-start">
-                                <LogOut className="mr-2 h-4 w-4" /> Logout
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Main content */}
-            <main className="pt-20 pb-10 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto">
-                    {/* Job URL submission */}
-                    <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 mb-8 animate-fade-in">
-                        <h2 className="text-2xl font-bold text-white mb-4">Submit Job Posting</h2>
-                        <form onSubmit={handleJobSubmit} className="flex gap-4">
                             <Input
-                                type="url"
-                                placeholder="Paste job URL here"
-                                value={jobUrl}
-                                onChange={(e) => setJobUrl(e.target.value)}
-                                className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-gray-400"
-                                required
+                                type="text"
+                                placeholder="Search..."
+                                className="w-64 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                             />
-                            <Button type="submit" className="bg-purple-600 hover:bg-purple-700" disabled={isLoading}>
-                                <Send className="w-4 h-4 mr-2" /> {isLoading ? 'Loading...' : 'Analyze Job'}
-                            </Button>
-                        </form>
-                    </div>
-
-                    {/* Dashboard grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Resume Fit */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 animate-fade-in animate-delay-100">
-                            <h3 className="text-xl font-bold text-white mb-4">Resume Fit</h3>
-                            <Button className="w-full bg-pink-600 hover:bg-pink-700 mb-4">
-                                <FileText className="w-4 h-4 mr-2" /> Generate ATS-Friendly Resume
-                            </Button>
-                            <div className="bg-white/5 rounded p-4 mb-4 max-h-96 overflow-auto">
-                                <div
-                                    className="text-white"
-                                    dangerouslySetInnerHTML={{ __html: formatResumeSection(resumeContent) }}
-                                />
-                            </div>
                         </div>
-
-                        {/* Cold Email */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 animate-fade-in animate-delay-200">
-                            <h3 className="text-xl font-bold text-white mb-4">Cold Email</h3>
-                            <Button className="w-full bg-orange-600 hover:bg-orange-700 mb-4">
-                                <Mail className="w-4 h-4 mr-2" /> Generate Personalized Email
+                        <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+                                {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                             </Button>
-                            {emailContent && (
-                                <div
-                                    className="mt-4 bg-white/5 border border-white/10 rounded p-4 text-white"
-                                    dangerouslySetInnerHTML={{ __html: emailContent }}
-                                />
-                            )}
+                            <Button variant="ghost" size="icon">
+                                <Bell className="h-5 w-5" />
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src="https://github.com/shadcn.png" alt="Chad" />
+                                            <AvatarFallback>SC</AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56" align="end" forceMount>
+                                    <DropdownMenuLabel className="font-normal">
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-medium leading-none">shadcn</p>
+                                            <p className="text-xs leading-none text-muted-foreground">
+                                                m@example.com
+                                            </p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>
+                                        Profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Settings
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        Logout
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
+                    </header>
 
-                        {/* Skills Analysis */}
-                        <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 animate-fade-in animate-delay-300">
-                            <h3 className="text-xl font-bold text-white mb-4">Skills Analysis</h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">Required Skills</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {['React', 'Node.js', 'TypeScript', 'AWS'].map((skill) => (
-                                            <span key={skill} className="bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                                                {skill}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">Your Matching Skills</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {['React', 'TypeScript'].map((skill) => (
-                                            <span key={skill} className="bg-green-500 text-white px-2 py-1 rounded text-sm">
-                                                {skill}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Dashboard Content */}
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
+                        {renderContent()}
+                    </main>
                 </div>
-            </main>
+            </div>
         </div>
     )
 }

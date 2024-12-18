@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+// import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,12 +9,12 @@ import { useRouter } from 'next/navigation'
 
 
 export default function Home() {
-  const [email, setEmail] = useState('')
+  // const [email, setEmail] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Beta Signup:', email)
-  }
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault()
+  //   console.log('Beta Signup:', email)
+  // }
 
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export default function Home() {
           Tailor your resume and generate personalized cold emails in seconds.
         </p>
 
-        <form onSubmit={handleSubmit} className="max-w-md mx-auto flex gap-4 mb-8">
+        {/* <form onSubmit={handleSubmit} className="max-w-md mx-auto flex gap-4 mb-8">
           <Input
             type="email"
             placeholder="Enter your email to join our beta..."
@@ -60,7 +60,7 @@ export default function Home() {
           >
             Join Beta
           </Button>
-        </form>
+        </form> */}
 
         <Button
           className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg"
@@ -88,7 +88,7 @@ export default function Home() {
               <div className="text-gray-300 text-sm">Projects</div>
             </div>
 
-            <div className="flex-1 space-y-4 bg-gray-800 p-5">
+            <div className="flex-1 space-y-4 p-5">
               <div className=" rounded-lg p-4">
                 <div className="text-white font-medium mb-2">Job Posting URL</div>
                 <div className="flex gap-2">
